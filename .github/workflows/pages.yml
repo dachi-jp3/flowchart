@@ -26,6 +26,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/
+          sed -i "s/__BUILD__/${GITHUB_SHA::7} ($(date -u +%Y-%m-%d\ %H:%M) UTC)/" _site/index.html
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -137,6 +137,9 @@ textarea{resize:none}
     <div id="ghst"></div>
     <p class="note">トークンはこの端末のブラウザ内にだけ保存されます。リポジトリ限定の Fine-grained token を推奨します。</p>
 
+    <h3>バージョン</h3>
+    <p class="note" id="ver">版: __BUILD__</p>
+
     <h3>使い方</h3>
     <ul>
       <li>「四角」「丸」→ 空きマスをタップで配置、ドラッグで大きさを指定。同じボタンをもう一度押すと連続配置。</li>
@@ -974,6 +977,7 @@ $('#g-save').onclick = async () => {
 };
 
 /* ===================== 片手操作 ===================== */
+if (document.getElementById('ver').textContent.includes('__BUI' + 'LD__')) document.getElementById('ver').textContent = '版: 開発版（未デプロイ）';
 function setLefty(on) {
   document.body.classList.toggle('lefty', on);
   $('#m-lefty').textContent = '左手モード: ' + (on ? 'ON' : 'OFF');
