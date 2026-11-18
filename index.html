@@ -10,37 +10,49 @@
 :root{--bg:#f1f5f9;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--acc:#2563eb;--card:#fff;--danger:#dc2626}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overscroll-behavior:none}
-body{display:flex;flex-direction:column;height:100dvh;overflow:hidden;font:15px/1.4 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{padding-top:env(safe-area-inset-top);display:flex;flex-direction:column;height:100dvh;overflow:hidden;font:15px/1.4 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 12px;cursor:pointer}
 button:active{background:#e2e8f0}
 button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 button.danger{color:var(--danger)}
 input,textarea{font:16px/1.4 inherit;font-family:inherit;color:var(--ink);background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:8px 10px;width:100%;-webkit-user-select:text;user-select:text}
 textarea{resize:none}
-#top{display:flex;align-items:center;gap:6px;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));background:var(--card);border-bottom:1px solid var(--line)}
-#top .t{font-weight:700;flex:1}
-#top button{min-width:44px;font-size:18px;padding:0 10px}
-#top button:disabled{opacity:.35}
 #stage{position:relative;flex:1;min-height:0;background:#fff}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
-#zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
-#zoom button{width:44px;height:44px;padding:0;font-size:20px;background:rgba(255,255,255,.95);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:8px}
+#hist{position:absolute;left:10px;bottom:10px;display:flex;gap:8px}
+.lefty #zoom{right:auto;left:10px}
+.lefty #hist{left:auto;right:10px}
+#hist button:disabled{opacity:.35}
+#hist button,#zoom button{width:52px;height:52px;padding:0;font-size:22px;background:rgba(255,255,255,.95);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 #hint{position:absolute;left:50%;top:10px;transform:translateX(-50%);max-width:92%;background:rgba(15,23,42,.82);color:#fff;border-radius:999px;padding:6px 14px;font-size:13px;pointer-events:none;text-align:center}
 #hint:empty{display:none}
-#sheet{background:var(--card);border-top:1px solid var(--line);padding:10px 12px;max-height:42dvh;overflow:auto;-webkit-user-select:auto}
+#sheet{background:var(--card);border-top:1px solid var(--line);padding:6px 8px;max-height:46dvh;overflow:auto;-webkit-user-select:auto}
+.bar{display:flex;gap:4px;overflow-x:auto}
+.bar button{flex:1 0 auto;min-width:48px;min-height:56px;padding:0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;border:0;background:transparent;border-radius:12px}
+.bar button.on{background:#dbeafe;color:#1d4ed8}
+.bar button.danger{color:var(--danger)}
+.bar .ic{font-size:20px;line-height:1;height:24px;display:flex;align-items:center}
+.dot{display:inline-block;width:20px;height:20px;border-radius:50%;border:2px solid #94a3b8}
+.panel{padding:8px 4px 6px;border-top:1px solid var(--line);margin-top:4px}
+.dpad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dpad button{font-size:22px;padding:0;min-height:52px}
+#toast{position:absolute;left:50%;bottom:72px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;border-radius:999px;padding:2px 4px 2px 16px;display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
+#toast[hidden]{display:none}
+#toast button{background:transparent;color:#93c5fd;border:0;min-height:40px}
 #sheet[hidden]{display:none}
 .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
 .row:last-child{margin-bottom:0}
 .row .lb{color:var(--mut);font-size:13px}
 .row b{min-width:1.6em;text-align:center}
 .seg{display:flex}
-.seg button{border-radius:0;margin-left:-1px;min-height:36px;padding:0 10px;font-size:14px}
+.seg button{border-radius:0;margin-left:-1px;min-height:44px;padding:0 12px;font-size:15px}
 .seg button:first-child{border-radius:10px 0 0 10px;margin-left:0}
 .seg button:last-child{border-radius:0 10px 10px 0}
-.sw{width:34px;height:34px;padding:0;border-radius:50%;border:2px solid #cbd5e1;min-height:0}
+.sw{width:42px;height:42px;padding:0;border-radius:50%;border:2px solid #cbd5e1;min-height:0}
 .sw.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
 #tools{display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px;padding-bottom:max(6px,env(safe-area-inset-bottom));gap:6px}
-#tools button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;font-size:12px;border-radius:12px;position:relative}
+#tools button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;padding:0 2px;font-size:12px;border-radius:12px;position:relative}
 #tools svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 #tools button.lock::after{content:"連続";position:absolute;top:2px;right:4px;font-size:10px;background:#f59e0b;color:#fff;border-radius:6px;padding:0 4px}
 #modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
@@ -57,12 +69,6 @@ textarea{resize:none}
 </style>
 </head>
 <body>
-<header id="top">
-  <div class="t">フロー図</div>
-  <button id="undo" title="元に戻す" disabled>↶</button>
-  <button id="redo" title="やり直し" disabled>↷</button>
-  <button id="menu" title="メニュー">☰</button>
-</header>
 
 <main id="stage">
   <svg id="cv" xmlns="http://www.w3.org/2000/svg">
@@ -80,6 +86,8 @@ textarea{resize:none}
     </g>
   </svg>
   <div id="hint"></div>
+  <div id="hist"><button id="undo" aria-label="元に戻す" disabled>↶</button><button id="redo" aria-label="やり直し" disabled>↷</button></div>
+  <div id="toast" hidden><span id="toast-t"></span><button id="toast-b">元に戻す</button></div>
   <div id="zoom">
     <button id="zin" aria-label="拡大">＋</button>
     <button id="zout" aria-label="縮小">－</button>
@@ -94,6 +102,7 @@ textarea{resize:none}
   <button data-tool="rect"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12"/></svg>四角</button>
   <button data-tool="ellipse"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>丸</button>
   <button data-tool="line"><svg viewBox="0 0 24 24"><path d="M3 19h9V6h6"/><path d="M16 3l4 3-4 3z" fill="currentColor"/></svg>線</button>
+  <button id="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>メニュー</button>
 </nav>
 
 <div id="modal" hidden>
@@ -102,6 +111,7 @@ textarea{resize:none}
     <div class="row">
       <button id="m-new">新規作成</button>
       <button id="m-fit">全体を表示</button>
+      <button id="m-lefty">左手モード: OFF</button>
     </div>
 
     <h3>ファイル</h3>
@@ -445,7 +455,7 @@ function edgeSvg(e, hl) {
 function cornerPos(n, i) { return [[n.x, n.y], [n.x + n.w, n.y], [n.x + n.w, n.y + n.h], [n.x, n.y + n.h]][i]; }
 function overlaySvg() {
   let s = '';
-  const k = view.k, hr = 8 / k, sw = 2 / k;
+  const k = view.k, hr = 11 / k, sw = 2 / k;
   if (sel && sel.type === 'node') {
     const n = nodeById(sel.id);
     if (n) {
@@ -527,12 +537,12 @@ function hitHandle(sp) {
   if (!sel) return null;
   if (sel.type === 'node') {
     const n = nodeById(sel.id); if (!n) return null;
-    for (let i = 0; i < 4; i++) { const [cx, cy] = cornerPos(n, i), s = toScreen(cx * G, cy * G); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 22) return { mode: 'resize', corner: i, orig: { x: n.x, y: n.y, w: n.w, h: n.h } }; }
+    for (let i = 0; i < 4; i++) { const [cx, cy] = cornerPos(n, i), s = toScreen(cx * G, cy * G); if (Math.hypot(s.x - sp.x, s.y - sp.y) < 30) return { mode: 'resize', corner: i, orig: { x: n.x, y: n.y, w: n.w, h: n.h } }; }
   } else {
     const p = routes[sel.id]; if (!p || p.length < 2) return null;
     const a = toScreen(p[0].x * G, p[0].y * G), b = toScreen(p[p.length - 1].x * G, p[p.length - 1].y * G);
-    if (Math.hypot(a.x - sp.x, a.y - sp.y) < 24) return { mode: 'endpoint', end: 'a' };
-    if (Math.hypot(b.x - sp.x, b.y - sp.y) < 24) return { mode: 'endpoint', end: 'b' };
+    if (Math.hypot(a.x - sp.x, a.y - sp.y) < 30) return { mode: 'endpoint', end: 'a' };
+    if (Math.hypot(b.x - sp.x, b.y - sp.y) < 30) return { mode: 'endpoint', end: 'b' };
   }
   return null;
 }
@@ -540,37 +550,48 @@ function resolveTarget(w) { const n = hitNode(w); return n ? { n: n.id } : toGri
 const sameEnd = (a, b) => a && b && (a.n ? a.n === b.n : (!b.n && a.x === b.x && a.y === b.y));
 
 /* ===================== 選択・シート ===================== */
+let sheetTab = null;
 function select(type, id) {
   const same = sel && type && sel.type === type && sel.id === id;
   sel = type ? { type, id } : null;
-  if (!same) renderSheet();
+  if (!same) { sheetTab = null; renderSheet(); }
   draw();
 }
 const seg = (k, opts, cur) => `<div class="seg">${opts.map(([v, l]) => `<button data-k="${k}" data-v="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+const tabBtn = (t, ic, lb) => `<button data-p="${t}" class="${sheetTab === t ? 'on' : ''}"><span class="ic">${ic}</span>${lb}</button>`;
+const actBtn = (a, ic, lb, cls = '') => `<button data-a="${a}" class="${cls}"><span class="ic">${ic}</span>${lb}</button>`;
 
 function renderSheet() {
   if (!sel) { sheet.hidden = true; sheet.innerHTML = ''; return; }
-  sheet.hidden = false;
+  let bar = '', panel = '';
   if (sel.type === 'node') {
     const n = nodeById(sel.id); if (!n) { sheet.hidden = true; return; }
-    sheet.innerHTML =
-      `<div class="row"><textarea id="s-text" rows="2" placeholder="文字を入力">${esc(n.text)}</textarea></div>` +
-      `<div class="row">${COLORS.map(c => `<button class="sw ${n.fill === c ? 'on' : ''}" data-k="fill" data-v="${c}" style="background:${c}" aria-label="色"></button>`).join('')}</div>` +
+    bar = tabBtn('text', 'Aa', '文字') + tabBtn('color', `<i class="dot" style="background:${n.fill}"></i>`, '色') + tabBtn('shape', '▭', '形・大きさ') +
+      tabBtn('move', '✥', '移動') + actBtn('link', '↱', '線を引く') + actBtn('dup', '⧉', '複製') + actBtn('del', '🗑', '削除', 'danger');
+    if (sheetTab === 'text') panel = `<textarea id="s-text" rows="2" placeholder="文字を入力">${esc(n.text)}</textarea>`;
+    else if (sheetTab === 'color') panel = `<div class="row" style="justify-content:center">${COLORS.map(c => `<button class="sw ${n.fill === c ? 'on' : ''}" data-k="fill" data-v="${c}" style="background:${c}" aria-label="色"></button>`).join('')}</div>`;
+    else if (sheetTab === 'shape') panel =
       `<div class="row"><span class="lb">形</span>${seg('t', [['rect', '四角'], ['ellipse', '丸']], n.t)}</div>` +
       `<div class="row"><span class="lb">幅</span><button data-a="w-">−</button><b>${n.w}</b><button data-a="w+">＋</button>` +
-      `<span class="lb" style="margin-left:10px">高さ</span><button data-a="h-">−</button><b>${n.h}</b><button data-a="h+">＋</button></div>` +
-      `<div class="row"><button data-a="dup">複製</button><button data-a="del" class="danger">削除</button><button data-a="close">閉じる</button></div>`;
+      `<span class="lb" style="margin-left:10px">高さ</span><button data-a="h-">−</button><b>${n.h}</b><button data-a="h+">＋</button></div>`;
+    else if (sheetTab === 'move') panel = `<div class="dpad"><button data-a="mv-l">←</button><button data-a="mv-u">↑</button><button data-a="mv-d">↓</button><button data-a="mv-r">→</button></div>`;
   } else {
     const e = edgeById(sel.id); if (!e) { sheet.hidden = true; return; }
     const sides = [['auto', '自動'], ['t', '上'], ['r', '右'], ['b', '下'], ['l', '左']];
-    sheet.innerHTML =
-      `<div class="row"><input id="s-label" placeholder="線のラベル（例: Yes）" value="${esc(e.label)}"></div>` +
-      (e.a.n ? `<div class="row"><span class="lb">始点の辺</span>${seg('as', sides, e.as)}</div>` : '') +
-      (e.b.n ? `<div class="row"><span class="lb">終点の辺</span>${seg('bs', sides, e.bs)}</div>` : '') +
-      `<div class="row"><span class="lb">矢印</span>${seg('arrow', [['end', '→'], ['both', '↔'], ['none', 'なし']], e.arrow)}` +
-      `<span class="lb">線種</span>${seg('dash', [['0', '実線'], ['1', '破線']], e.dash ? 1 : 0)}</div>` +
-      `<div class="row"><button data-a="del" class="danger">削除</button><button data-a="close">閉じる</button></div>`;
+    bar = tabBtn('label', 'Aa', 'ラベル') + (e.a.n ? tabBtn('as', '始', '始点の辺') : '') + (e.b.n ? tabBtn('bs', '終', '終点の辺') : '') + tabBtn('style', '→', '矢印・線種') + actBtn('del', '🗑', '削除', 'danger');
+    if (sheetTab === 'label') panel = `<input id="s-label" placeholder="線のラベル（例: Yes）" value="${esc(e.label)}">`;
+    else if (sheetTab === 'as') panel = `<div class="row">${seg('as', sides, e.as)}</div>`;
+    else if (sheetTab === 'bs') panel = `<div class="row">${seg('bs', sides, e.bs)}</div>`;
+    else if (sheetTab === 'style') panel = `<div class="row"><span class="lb">矢印</span>${seg('arrow', [['end', '→'], ['both', '↔'], ['none', 'なし']], e.arrow)}</div>` +
+      `<div class="row"><span class="lb">線種</span>${seg('dash', [['0', '実線'], ['1', '破線']], e.dash ? 1 : 0)}</div>`;
   }
+  sheet.hidden = false;
+  sheet.innerHTML = `<div class="bar">${bar}</div>${panel ? `<div class="panel">${panel}</div>` : ''}`;
+}
+function openTab(t, force) {
+  sheetTab = (sheetTab === t && !force) ? null : t;
+  renderSheet();
+  if (sheetTab === 'text' || sheetTab === 'label') { const el = $('#s-text') || $('#s-label'); if (el) el.focus(); }
 }
 
 let textSnapped = false;
@@ -582,14 +603,17 @@ sheet.addEventListener('input', e => {
   else if (e.target.id === 's-label') { const ed = edgeById(sel.id); if (ed) ed.label = e.target.value; }
   draw(); persist();
 });
+const MOVES = { 'mv-u': [0, -1], 'mv-d': [0, 1], 'mv-l': [-1, 0], 'mv-r': [1, 0] };
 sheet.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || !sel) return;
   const a = b.dataset.a, k = b.dataset.k, v = b.dataset.v;
-  if (a === 'close') { select(null); return; }
+  if (b.dataset.p) { openTab(b.dataset.p); return; }
   if (a === 'del') { snap(); deleteSel(); return; }
   if (sel.type === 'node') {
     const n = nodeById(sel.id); if (!n) return;
-    if (a === 'dup') { snap(); const c = { ...n, id: newId('n'), x: n.x + 2, y: n.y + 2 }; doc.nodes.push(c); sel = { type: 'node', id: c.id }; }
+    if (a === 'link') { const id = n.id; setTool('line'); pend = { n: id }; select(null); updateHint(); return; }
+    if (a === 'dup') { snap(); const c = { ...n, id: newId('n'), x: n.x + 2, y: n.y + 2 }; doc.nodes.push(c); sel = { type: 'node', id: c.id }; sheetTab = null; }
+    else if (MOVES[a]) { snap(); n.x += MOVES[a][0]; n.y += MOVES[a][1]; }
     else if (a) { snap(); if (a === 'w-') n.w = Math.max(2, n.w - 2); if (a === 'w+') n.w += 2; if (a === 'h-') n.h = Math.max(2, n.h - 2); if (a === 'h+') n.h += 2; }
     else if (k === 'fill') { if (COLORS.includes(v)) { snap(); n.fill = v; } }
     else if (k === 't') { if (v === 'rect' || v === 'ellipse') { snap(); n.t = v; } }
@@ -601,21 +625,28 @@ sheet.addEventListener('click', e => {
   renderSheet(); refresh();
 });
 
+let toastT = 0;
+function toast(msg) {
+  $('#toast-t').textContent = msg; $('#toast').hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { $('#toast').hidden = true; }, 5000);
+}
+$('#toast-b').onclick = () => { $('#toast').hidden = true; undo(); };
+
 function deleteSel() {
   if (!sel) return;
   if (sel.type === 'node') { doc.nodes = doc.nodes.filter(n => n.id !== sel.id); doc.edges = doc.edges.filter(e => !(e.a.n === sel.id || e.b.n === sel.id)); }
   else doc.edges = doc.edges.filter(e => e.id !== sel.id);
-  sel = null; renderSheet(); refresh();
+  sel = null; renderSheet(); refresh(); toast('削除しました');
 }
 
 /* ===================== ツール切替 ===================== */
 function setTool(t) {
   if (t === tool && t !== 'select') { lock = !lock; } else { lock = false; }
   tool = t; pend = null; previewPts = null; ghost = null;
-  document.querySelectorAll('#tools button').forEach(b => { b.classList.toggle('on', b.dataset.tool === tool); b.classList.toggle('lock', lock && b.dataset.tool === tool); });
+  document.querySelectorAll('#tools button[data-tool]').forEach(b => { b.classList.toggle('on', b.dataset.tool === tool); b.classList.toggle('lock', lock && b.dataset.tool === tool); });
   draw();
 }
-document.querySelectorAll('#tools button').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
+document.querySelectorAll('#tools button[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
 
 /* ===================== ポインタ操作 ===================== */
 const ptrs = new Map();
@@ -727,7 +758,7 @@ function up(e, g, cancelled) {
     case 'move':
       if (!g.moved) {
         const now = Date.now();
-        if (lastTap.id === g.id && now - lastTap.t < 400) { const t = $('#s-text'); if (t) { t.focus(); t.select(); } lastTap = {}; }
+        if (lastTap.id === g.id && now - lastTap.t < 400) { openTab('text', true); lastTap = {}; }
         else lastTap = { id: g.id, t: now };
       }
       refresh(); break;
@@ -941,6 +972,19 @@ $('#g-save').onclick = async () => {
     await ghFetch(c, 'PUT', body); ghStatus('GitHubへ保存しました');
   } catch (err) { ghStatus('失敗: ' + err.message); }
 };
+
+/* ===================== 片手操作 ===================== */
+function setLefty(on) {
+  document.body.classList.toggle('lefty', on);
+  $('#m-lefty').textContent = '左手モード: ' + (on ? 'ON' : 'OFF');
+  lsSet('fc-lefty', on ? '1' : '');
+}
+$('#m-lefty').onclick = () => setLefty(!document.body.classList.contains('lefty'));
+setLefty(lsGet('fc-lefty') === '1');
+// ソフトキーボード表示中も、文字入力欄が隠れないよう画面の高さを追従させる
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', () => { document.body.style.height = visualViewport.height + 'px'; window.scrollTo(0, 0); });
+}
 
 /* ===================== 起動 ===================== */
 (function init() {
