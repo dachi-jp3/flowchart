@@ -58,12 +58,21 @@ textarea{resize:none}
 #modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
 #modal[hidden]{display:none}
 #modal .box{background:var(--card);width:100%;max-width:560px;max-height:90dvh;overflow:auto;border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));-webkit-user-select:auto}
+#acc details{border:1px solid var(--line);border-radius:12px;margin-top:8px;padding:0 12px 4px;background:#fff}
+#acc details details{background:#f8fafc;margin:4px 0 8px}
+#acc summary{min-height:48px;display:flex;align-items:center;font-weight:600;cursor:pointer;list-style:none}
+#acc details details summary{font-weight:500;font-size:14px;min-height:44px}
+#acc summary::-webkit-details-marker{display:none}
+#acc summary::after{content:"▾";margin-left:auto;color:var(--mut)}
+#acc details[open]>summary::after{content:"▴"}
+#modal .note#ver{text-align:center;margin-top:12px}
 #modal h2{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}
 #modal h3{margin:14px 0 6px;font-size:13px;color:var(--mut)}
 #modal ul{margin:6px 0 0;padding-left:1.2em;font-size:13px;color:#334155}
 #modal .note{font-size:12px;color:var(--mut);margin:6px 0 0}
 #modal .row button{flex:1 1 auto}
-#ghst{font-size:13px;color:#334155;min-height:1.4em;word-break:break-all}
+#ghst{font-size:13px;color:#334155;word-break:break-all;margin:0 0 8px}
+#ghst:empty{display:none}
 #file{display:none}
 @media (min-width:700px){#modal{align-items:center}#modal .box{border-radius:18px}}
 </style>
@@ -114,39 +123,52 @@ textarea{resize:none}
       <button id="m-lefty">左手モード: OFF</button>
     </div>
 
-    <h3>ファイル</h3>
-    <div class="row">
-      <button id="m-json">JSONを保存</button>
-      <button id="m-copy">JSONをコピー</button>
-      <button id="m-open">JSONを開く</button>
-    </div>
-    <div class="row"><textarea id="m-paste" rows="2" placeholder="ここにJSONを貼り付けて「貼り付けから読み込み」"></textarea></div>
-    <div class="row"><button id="m-paste-go">貼り付けから読み込み</button></div>
-    <div class="row">
-      <button id="m-svg">SVGで書き出し</button>
-      <button id="m-png">PNGで書き出し</button>
-    </div>
-    <input type="file" id="file" accept=".json,application/json">
+    <div id="acc">
+      <details>
+        <summary>保存・書き出し</summary>
+        <div class="row">
+          <button id="m-json">JSONを保存</button>
+          <button id="m-open">JSONを開く</button>
+        </div>
+        <div class="row">
+          <button id="m-svg">SVG書き出し</button>
+          <button id="m-png">PNG書き出し</button>
+        </div>
+        <details>
+          <summary>JSONをコピー / 貼り付け</summary>
+          <div class="row"><button id="m-copy">JSONをコピー</button></div>
+          <div class="row"><textarea id="m-paste" rows="2" placeholder="JSONを貼り付け"></textarea></div>
+          <div class="row"><button id="m-paste-go">貼り付けから読み込み</button></div>
+        </details>
+        <input type="file" id="file" accept=".json,application/json">
+      </details>
 
-    <h3>GitHub（プライベートリポジトリに保存）</h3>
-    <div class="row"><input id="g-repo" placeholder="owner/repo" autocapitalize="off" autocorrect="off"></div>
-    <div class="row"><input id="g-path" placeholder="保存パス 例: diagrams/flow.json" autocapitalize="off" autocorrect="off"></div>
-    <div class="row"><input id="g-branch" placeholder="ブランチ（空欄ならリポジトリの既定ブランチ）" autocapitalize="off" autocorrect="off"></div>
-    <div class="row"><input id="g-token" type="password" placeholder="Personal Access Token（Contents: 読み書き）" autocapitalize="off" autocorrect="off"></div>
-    <div class="row"><button id="g-load">GitHubから読み込み</button><button id="g-save">GitHubへ保存</button></div>
-    <div id="ghst"></div>
-    <p class="note">トークンはこの端末のブラウザ内にだけ保存されます。リポジトリ限定の Fine-grained token を推奨します。</p>
+      <details>
+        <summary>GitHubに保存</summary>
+        <div class="row"><button id="g-load">読み込み</button><button id="g-save">保存</button></div>
+        <div id="ghst"></div>
+        <details>
+          <summary>接続設定（初回のみ）</summary>
+          <div class="row"><input id="g-repo" placeholder="owner/repo" autocapitalize="off" autocorrect="off"></div>
+          <div class="row"><input id="g-path" placeholder="保存パス 例: diagrams/flow.json" autocapitalize="off" autocorrect="off"></div>
+          <div class="row"><input id="g-branch" placeholder="ブランチ（空欄=既定）" autocapitalize="off" autocorrect="off"></div>
+          <div class="row"><input id="g-token" type="password" placeholder="アクセストークン（Contents: 読み書き）" autocapitalize="off" autocorrect="off"></div>
+          <p class="note">トークンはこの端末のブラウザ内にだけ保存されます。対象リポジトリ限定のトークンを推奨します。</p>
+        </details>
+      </details>
 
-    <h3>バージョン</h3>
+      <details>
+        <summary>使い方</summary>
+        <ul>
+          <li><b>四角・丸</b>: 空きマスをタップで配置、ドラッグで大きさ指定。もう一度押すと連続配置。</li>
+          <li><b>線</b>: 始点→終点の図形を順にタップ。直角のみで自動配線。空きマスで線の端を置けます。</li>
+          <li><b>選択</b>: ドラッグで移動、四隅の○で大きさ変更、選ぶと下に操作バーが出ます。</li>
+          <li>2本指で拡大縮小・移動。</li>
+        </ul>
+      </details>
+    </div>
+
     <p class="note" id="ver">版: __BUILD__</p>
-
-    <h3>使い方</h3>
-    <ul>
-      <li>「四角」「丸」→ 空きマスをタップで配置、ドラッグで大きさを指定。同じボタンをもう一度押すと連続配置。</li>
-      <li>「線」→ 始点の図形をタップ、続けて終点の図形をタップ（または始点からドラッグ）。線は直角のみで自動配線されます。空きマスをタップすると線の端をその位置に置けます。</li>
-      <li>「選択」→ 図形をドラッグで移動、四隅の○で大きさ変更、ダブルタップで文字入力。線をタップすると端点の付け替えや辺・矢印の設定ができます。</li>
-      <li>2本指で拡大縮小・移動。選択ツールで余白をドラッグしても移動できます。</li>
-    </ul>
   </div>
 </div>
 
@@ -975,6 +997,11 @@ $('#g-save').onclick = async () => {
     await ghFetch(c, 'PUT', body); ghStatus('GitHubへ保存しました');
   } catch (err) { ghStatus('失敗: ' + err.message); }
 };
+
+/* メニューのアコーディオン(第1階層は1つだけ開く) */
+document.querySelectorAll('#acc > details').forEach(d => d.addEventListener('toggle', () => {
+  if (d.open) document.querySelectorAll('#acc > details').forEach(o => { if (o !== d) o.open = false; });
+}));
 
 /* ===================== 片手操作 ===================== */
 if (document.getElementById('ver').textContent.includes('__BUI' + 'LD__')) document.getElementById('ver').textContent = '版: 開発版（未デプロイ）';
