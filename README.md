@@ -13,7 +13,7 @@
 ## スマホでの使い方
 GitHub アプリ上の HTML はソース表示になり実行されないため、次のいずれかで開いてください。
 1. `index.html` を **Raw** で開いて端末に保存（「ファイル」アプリ等）→ Safari/Chrome で開く
-2. PC/スマホのブラウザで配信している環境（GitHub Pages など）から開く
+2. GitHub Pages で公開した URL から開く（下記）
 
 図は **メニュー → GitHubへ保存** でこのリポジトリ（既定: `diagrams/flow.json`）にコミットできます。
 トークンはリポジトリ限定の Fine-grained token（Contents: Read and write）を推奨します。
@@ -27,3 +27,11 @@ GitHub アプリ上の HTML はソース表示になり実行されないため�
 | 共通 | 2本指で拡大縮小/移動、選択ツールで余白をドラッグしても移動 |
 
 PC では Delete で削除、Ctrl/⌘+Z で取り消し、Ctrl/⌘+Y でやり直し。
+
+## GitHub Pages で公開する
+`.github/workflows/pages.yml` により、プッシュのたびに `index.html` が Pages へ自動デプロイされます。
+初回のみ、リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にしてください。
+公開 URL: `https://dachi-jp3.github.io/flowchart/`
+
+> 注意: Pages のサイトは、リポジトリが非公開でも URL を知っていれば誰でも見られます（Enterprise Cloud を除く）。
+> 機密性のある図を GitHub へ保存する用途には向きません。
