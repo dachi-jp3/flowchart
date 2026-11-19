@@ -37,6 +37,10 @@ textarea{resize:none}
 .panel{padding:8px 4px 6px;border-top:1px solid var(--line);margin-top:4px}
 .dpad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .dpad button{font-size:22px;padding:0;min-height:52px}
+.pal{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;justify-items:center}
+.sw.none{background:linear-gradient(135deg,#fff 44%,#ef4444 44%,#ef4444 56%,#fff 56%)!important}
+.cust{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;min-height:44px;padding:0 10px;font-size:14px;background:#fff}
+.cust input{width:38px;height:30px;padding:0;border:0;background:none;border-radius:6px}
 #toast{position:absolute;left:50%;bottom:72px;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;border-radius:999px;padding:2px 4px 2px 16px;display:flex;align-items:center;gap:6px;font-size:14px;white-space:nowrap}
 #toast[hidden]{display:none}
 #toast button{background:transparent;color:#93c5fd;border:0;min-height:40px}
@@ -49,7 +53,7 @@ textarea{resize:none}
 .seg button{border-radius:0;margin-left:-1px;min-height:44px;padding:0 12px;font-size:15px}
 .seg button:first-child{border-radius:10px 0 0 10px;margin-left:0}
 .seg button:last-child{border-radius:0 10px 10px 0}
-.sw{width:42px;height:42px;padding:0;border-radius:50%;border:2px solid #cbd5e1;min-height:0}
+.sw{width:36px;height:36px;padding:0;border-radius:50%;border:2px solid #cbd5e1;min-height:0}
 .sw.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
 #tools{display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 6px;padding-bottom:max(6px,env(safe-area-inset-bottom));gap:6px}
 #tools button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;padding:0 2px;font-size:12px;border-radius:12px;position:relative}
@@ -89,6 +93,7 @@ textarea{resize:none}
     </defs>
     <g id="world">
       <rect id="gridrect" fill="url(#grid)"/>
+      <g id="groups"></g>
       <g id="edges"></g>
       <g id="nodes"></g>
       <g id="overlay"></g>
@@ -110,6 +115,7 @@ textarea{resize:none}
   <button data-tool="select"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 2-2 6z"/></svg>選択</button>
   <button data-tool="rect"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12"/></svg>四角</button>
   <button data-tool="ellipse"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>丸</button>
+  <button data-tool="group"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" stroke-dasharray="3 2"/><rect x="3" y="5" width="8" height="4" fill="currentColor"/></svg>枠</button>
   <button data-tool="line"><svg viewBox="0 0 24 24"><path d="M3 19h9V6h6"/><path d="M16 3l4 3-4 3z" fill="currentColor"/></svg>線</button>
   <button id="menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>メニュー</button>
 </nav>
@@ -179,12 +185,21 @@ const G = 20;                 // 1グリッド = 20px
 const BEND = 4;               // 曲がりのコスト
 const SIDES = ['t','r','b','l'];
 const DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
-const COLORS = ['#ffffff','#dbeafe','#dcfce7','#fef9c3','#fee2e2','#ede9fe','#e5e7eb'];
+// 塗り色: 薄い色 → 中間 → 濃い色（各8色）
+const FILLS = ['#ffffff','#e5e7eb','#fee2e2','#ffedd5','#fef9c3','#dcfce7','#dbeafe','#ede9fe',
+               '#fca5a5','#fdba74','#fde047','#86efac','#5eead4','#93c5fd','#c4b5fd','#f9a8d4',
+               '#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#1e293b'];
+// 枠線・線の色
+const STROKES = ['#334155','#64748b','#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899','#92400e','#0f172a'];
+const isHex = c => /^#[0-9a-fA-F]{6}$/.test(c);
+function lum(h) { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+// 背景色に対して読みやすい文字色(白/濃紺)を選ぶ
+function textColor(bg) { if (!isHex(bg)) return '#0f172a'; const L = lum(bg); return 1.05 / (L + 0.05) > (L + 0.05) / 0.058 ? '#ffffff' : '#0f172a'; }
 const INK = '#334155', ACC = '#2563eb';
 const KEY = 'flowchart-doc-v1';
 const FONT = "-apple-system,'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
 
-const cv = $('#cv'), world = $('#world'), edgesG = $('#edges'), nodesG = $('#nodes'), overlayG = $('#overlay');
+const cv = $('#cv'), world = $('#world'), groupsG = $('#groups'), edgesG = $('#edges'), nodesG = $('#nodes'), overlayG = $('#overlay');
 const sheet = $('#sheet'), hintEl = $('#hint');
 
 /* ===================== データ ===================== */
@@ -208,11 +223,15 @@ function normalize(d) {
   for (const n of (d && d.nodes) || []) {
     if (!n || !n.id || ids.has(n.id)) continue;
     ids.add(n.id);
+    const g = n.t === 'group';
     out.nodes.push({
-      id: String(n.id), t: n.t === 'ellipse' ? 'ellipse' : 'rect',
+      id: String(n.id), t: g ? 'group' : n.t === 'ellipse' ? 'ellipse' : 'rect',
       x: Math.round(+n.x || 0), y: Math.round(+n.y || 0),
-      w: even(+n.w || 6), h: even(+n.h || 4),
-      text: String(n.text || ''), fill: /^#[0-9a-fA-F]{6}$/.test(n.fill) ? n.fill : '#ffffff'
+      w: even(+n.w || (g ? 12 : 6)), h: even(+n.h || (g ? 8 : 4)),
+      text: String(n.text || ''),
+      fill: isHex(n.fill) || (g && n.fill === 'none') ? n.fill : (g ? 'none' : '#ffffff'),
+      stroke: isHex(n.stroke) ? n.stroke : (g ? '#3b82f6' : INK),
+      dash: n.dash === undefined ? g : !!n.dash
     });
   }
   const endOk = a => a && (a.n ? ids.has(a.n) : (isFinite(a.x) && isFinite(a.y)));
@@ -222,7 +241,7 @@ function normalize(d) {
     out.edges.push({
       id: String(e.id), a: fixEnd(e.a), b: fixEnd(e.b),
       as: SIDES.includes(e.as) ? e.as : 'auto', bs: SIDES.includes(e.bs) ? e.bs : 'auto',
-      label: String(e.label || ''), arrow: ['end','none','both'].includes(e.arrow) ? e.arrow : 'end', dash: !!e.dash
+      color: isHex(e.color) ? e.color : '', label: String(e.label || ''), arrow: ['end','none','both'].includes(e.arrow) ? e.arrow : 'end', dash: !!e.dash
     });
   }
   let m = 0;
@@ -239,6 +258,7 @@ function sampleDoc() {
     N('n1','ellipse',8,1,4,4,'開始'), N('n2','rect',7,8,6,4,'入力'), N('n3','ellipse',7,15,6,4,'条件\nOK?'),
     N('n4','rect',1,22,6,4,'処理A'), N('n5','rect',13,22,6,4,'処理B'), N('n6','ellipse',8,29,4,4,'終了')
   ], edges: [ E('e1','n1','n2'), E('e2','n2','n3'), E('e3','n3','n4','Yes'), E('e4','n3','n5','No'), E('e5','n4','n6'), E('e6','n5','n6') ] };
+  d.nodes.push({ id: 'g1', t: 'group', x: 0, y: 20, w: 20, h: 8, text: '分岐処理', fill: 'none', stroke: '#3b82f6', dash: true });
   d.nodes[1].fill = '#dbeafe'; d.nodes[3].fill = '#dcfce7'; d.nodes[4].fill = '#fee2e2';
   return d;
 }
@@ -414,7 +434,7 @@ function routeList(edges) {
   if (x0 > x1) return out;
   const PAD = 8, ox = x0 - PAD, oy = y0 - PAD, W = x1 - x0 + 2 * PAD + 1, H = y1 - y0 + 2 * PAD + 1;
   const blocked = new Uint8Array(W * H), uh = new Uint8Array(W * H), uv = new Uint8Array(W * H);
-  for (const n of doc.nodes) for (let y = n.y; y <= n.y + n.h; y++) for (let x = n.x; x <= n.x + n.w; x++) blocked[(y - oy) * W + (x - ox)] = 1;
+  for (const n of doc.nodes) if (n.t !== 'group') for (let y = n.y; y <= n.y + n.h; y++) for (let x = n.x; x <= n.x + n.w; x++) blocked[(y - oy) * W + (x - ox)] = 1;
   ensureBuf(W * H * 5);
   const R = { ox, oy, W, H, blocked, uh, uv };
   for (const e of edges) { out[e.id] = routeEdge(e, R); markUsage(out[e.id], R); }
@@ -441,15 +461,27 @@ function textW(t, fs) { let w = 0; for (const ch of [...t]) w += charW(ch) * fs;
 function nodeSvg(n) {
   const x = n.x * G, y = n.y * G, w = n.w * G, h = n.h * G, cx = x + w / 2, cy = y + h / 2;
   let s = n.t === 'ellipse'
-    ? `<ellipse cx="${cx}" cy="${cy}" rx="${w / 2}" ry="${h / 2}" fill="${n.fill}" stroke="${INK}" stroke-width="2"/>`
-    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${n.fill}" stroke="${INK}" stroke-width="2"/>`;
+    ? `<ellipse cx="${cx}" cy="${cy}" rx="${w / 2}" ry="${h / 2}" fill="${n.fill}" stroke="${n.stroke}" stroke-width="2"${n.dash ? ' stroke-dasharray="8 5"' : ''}/>`
+    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${n.fill}" stroke="${n.stroke}" stroke-width="2"${n.dash ? ' stroke-dasharray="8 5"' : ''}/>`;
   if (n.text) {
     const maxW = (n.t === 'ellipse' ? w * 0.72 : w - 12), maxH = (n.t === 'ellipse' ? h * 0.72 : h - 8);
     let fs = 14, lines;
     for (; fs >= 9; fs--) { lines = wrapText(n.text, maxW, fs); if (lines.length * fs * 1.3 <= maxH) break; }
     const lh = fs * 1.3;
-    s += `<text text-anchor="middle" font-size="${fs}" fill="#0f172a" font-family="${FONT}">` +
+    s += `<text text-anchor="middle" font-size="${fs}" fill="${textColor(n.fill)}" font-family="${FONT}">` +
       lines.map((l, i) => `<tspan x="${cx}" y="${cy + (i - (lines.length - 1) / 2) * lh + fs * 0.35}">${esc(l)}</tspan>`).join('') + '</text>';
+  }
+  return s;
+}
+
+const groupsSorted = () => doc.nodes.filter(n => n.t === 'group').sort((a, b) => b.w * b.h - a.w * a.h);
+const tabW = g => Math.max(44, textW(String(g.text).replace(/\n/g, ' '), 13) + 18);
+function groupSvg(g) {
+  const x = g.x * G, y = g.y * G, w = g.w * G, h = g.h * G, none = g.fill === 'none';
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${none ? 'none' : g.fill}" fill-opacity="${none ? 0 : 0.55}" stroke="${g.stroke}" stroke-width="2"${g.dash ? ' stroke-dasharray="8 5"' : ''}/>`;
+  if (g.text) {
+    s += `<rect x="${x}" y="${y}" width="${tabW(g)}" height="22" fill="${g.stroke}"/>` +
+      `<text x="${x + 9}" y="${y + 15}" font-size="13" font-weight="600" fill="${textColor(g.stroke)}" font-family="${FONT}">${esc(String(g.text).replace(/\n/g, ' '))}</text>`;
   }
   return s;
 }
@@ -462,7 +494,7 @@ function arrowSvg(t, f, col) {
 function edgeSvg(e, hl) {
   const p = routes[e.id];
   if (!p || p.length < 2) return '';
-  const col = hl ? ACC : INK;
+  const col = hl ? ACC : (e.color || INK);
   const d = p.map((q, i) => (i ? 'L' : 'M') + q.x * G + ' ' + q.y * G).join('');
   let s = `<path d="${d}" fill="none" stroke="${col}" stroke-width="${hl ? 3 : 2}" stroke-linejoin="miter"${e.dash ? ' stroke-dasharray="8 5"' : ''}/>`;
   if (e.arrow === 'end' || e.arrow === 'both') s += arrowSvg(p[p.length - 1], p[p.length - 2], col);
@@ -518,7 +550,8 @@ function draw() {
   gr.setAttribute('width', r.width / k); gr.setAttribute('height', r.height / k);
   $('#gminor').setAttribute('opacity', k < 0.45 ? 0 : 1);
   edgesG.innerHTML = doc.edges.map(e => edgeSvg(e, sel && sel.type === 'edge' && sel.id === e.id)).join('');
-  nodesG.innerHTML = doc.nodes.map(nodeSvg).join('');
+  groupsG.innerHTML = groupsSorted().map(groupSvg).join('');
+  nodesG.innerHTML = doc.nodes.filter(n => n.t !== 'group').map(nodeSvg).join('');
   overlayG.innerHTML = overlaySvg();
   updateHint();
 }
@@ -527,6 +560,7 @@ function refresh() { routes = routeList(doc.edges); draw(); persist(); }
 function updateHint() {
   let t = '';
   if (tool === 'rect' || tool === 'ellipse') t = 'タップで配置 / ドラッグで大きさを指定';
+  else if (tool === 'group') t = 'タップで枠を配置 / ドラッグで範囲を指定';
   else if (tool === 'line') t = pend ? '終点の図形（または空きマス）をタップ' : '始点の図形をタップ（またはドラッグして終点へ）';
   else if (!doc.nodes.length) t = '下の「四角」「丸」から図形を配置できます';
   hintEl.textContent = t;
@@ -537,9 +571,25 @@ function toWorld(cx, cy) { const r = cv.getBoundingClientRect(); return { x: (cx
 function toScreen(wx, wy) { const r = cv.getBoundingClientRect(); return { x: r.left + view.x + wx * view.k, y: r.top + view.y + wy * view.k }; }
 const toGrid = w => ({ x: Math.round(w.x / G), y: Math.round(w.y / G) });
 
+function kidsOf(g) { return doc.nodes.filter(n => n !== g && n.x >= g.x && n.y >= g.y && n.x + n.w <= g.x + g.w && n.y + n.h <= g.y + g.h); }
+function moveNode(n, dx, dy) { n.x += dx; n.y += dy; if (n.t === 'group') for (const k of kidsOf(n)) { k.x += dx; k.y += dy; } }
+// 枠は縁とタブ(名前の部分)だけを掴める(内側は余白として操作を邪魔しない)
+function hitGroup(w) {
+  const m = 14 / view.k; let best = null, ba = Infinity;
+  for (const g of doc.nodes) {
+    if (g.t !== 'group') continue;
+    const x = g.x * G, y = g.y * G, W = g.w * G, H = g.h * G;
+    if (w.x < x - m || w.x > x + W + m || w.y < y - m || w.y > y + H + m) continue;
+    const edge = !(w.x > x + m && w.x < x + W - m && w.y > y + m && w.y < y + H - m);
+    const tab = g.text && w.x <= x + tabW(g) && w.y <= y + 24;
+    if ((edge || tab) && W * H < ba) { best = g; ba = W * H; }
+  }
+  return best;
+}
 function hitNode(w) {
   for (let i = doc.nodes.length - 1; i >= 0; i--) {
     const n = doc.nodes[i], x = n.x * G, y = n.y * G;
+    if (n.t === 'group') continue;
     if (w.x >= x && w.x <= x + n.w * G && w.y >= y && w.y <= y + n.h * G) return n;
   }
   return null;
@@ -575,40 +625,51 @@ function resolveTarget(w) { const n = hitNode(w); return n ? { n: n.id } : toGri
 const sameEnd = (a, b) => a && b && (a.n ? a.n === b.n : (!b.n && a.x === b.x && a.y === b.y));
 
 /* ===================== 選択・シート ===================== */
-let sheetTab = null;
+let sheetTab = null, colorMode = 'fill';
 function select(type, id) {
   const same = sel && type && sel.type === type && sel.id === id;
   sel = type ? { type, id } : null;
-  if (!same) { sheetTab = null; renderSheet(); }
+  if (!same) { sheetTab = null; const n = type === 'node' ? nodeById(id) : null; colorMode = n && n.t === 'group' ? 'stroke' : 'fill'; renderSheet(); }
   draw();
 }
 const seg = (k, opts, cur) => `<div class="seg">${opts.map(([v, l]) => `<button data-k="${k}" data-v="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
 const tabBtn = (t, ic, lb) => `<button data-p="${t}" class="${sheetTab === t ? 'on' : ''}"><span class="ic">${ic}</span>${lb}</button>`;
 const actBtn = (a, ic, lb, cls = '') => `<button data-a="${a}" class="${cls}"><span class="ic">${ic}</span>${lb}</button>`;
+const palette = (list, cur, key, extra = '') => `<div class="pal">${extra}${list.map(c => `<button class="sw ${cur === c ? 'on' : ''}" data-k="${key}" data-v="${c}" style="background:${c}" aria-label="色 ${c}"></button>`).join('')}</div>`;
+const customColor = cur => `<label class="cust">自由に選ぶ<input type="color" id="s-cc" value="${isHex(cur) ? cur : '#888888'}"></label>`;
 
 function renderSheet() {
   if (!sel) { sheet.hidden = true; sheet.innerHTML = ''; return; }
   let bar = '', panel = '';
   if (sel.type === 'node') {
     const n = nodeById(sel.id); if (!n) { sheet.hidden = true; return; }
-    bar = tabBtn('text', 'Aa', '文字') + tabBtn('color', `<i class="dot" style="background:${n.fill}"></i>`, '色') + tabBtn('shape', '▭', '形・大きさ') +
-      tabBtn('move', '✥', '移動') + actBtn('link', '↱', '線を引く') + actBtn('dup', '⧉', '複製') + actBtn('del', '🗑', '削除', 'danger');
-    if (sheetTab === 'text') panel = `<textarea id="s-text" rows="2" placeholder="文字を入力">${esc(n.text)}</textarea>`;
-    else if (sheetTab === 'color') panel = `<div class="row" style="justify-content:center">${COLORS.map(c => `<button class="sw ${n.fill === c ? 'on' : ''}" data-k="fill" data-v="${c}" style="background:${c}" aria-label="色"></button>`).join('')}</div>`;
+    const g = n.t === 'group';
+    bar = tabBtn('text', 'Aa', g ? 'グループ名' : '文字') + tabBtn('color', `<i class="dot" style="background:${g ? n.stroke : n.fill}"></i>`, '色') + tabBtn('shape', '▭', g ? '大きさ・線' : '形・大きさ') +
+      tabBtn('move', '✥', g ? '移動(中身も)' : '移動') + (g ? '' : actBtn('link', '↱', '線を引く')) + actBtn('dup', '⧉', '複製') + actBtn('del', '🗑', '削除', 'danger');
+    if (sheetTab === 'text') panel = g ? `<input id="s-text" placeholder="グループ名" value="${esc(n.text)}">` : `<textarea id="s-text" rows="2" placeholder="文字を入力">${esc(n.text)}</textarea>`;
+    else if (sheetTab === 'color') {
+      const modes = g ? [['stroke', '枠線'], ['fill', '背景']] : [['fill', '塗り'], ['stroke', '枠線']];
+      const cur = n[colorMode];
+      const none = g && colorMode === 'fill' ? `<button class="sw none ${n.fill === 'none' ? 'on' : ''}" data-k="fill" data-v="none" aria-label="透明"></button>` : '';
+      panel = `<div class="row">${seg('cm', modes, colorMode)}${customColor(cur)}</div>` + palette(colorMode === 'fill' ? FILLS : STROKES, cur, colorMode, none);
+    }
     else if (sheetTab === 'shape') panel =
-      `<div class="row"><span class="lb">形</span>${seg('t', [['rect', '四角'], ['ellipse', '丸']], n.t)}</div>` +
+      (g ? '' : `<div class="row"><span class="lb">形</span>${seg('t', [['rect', '四角'], ['ellipse', '丸']], n.t)}</div>`) +
       `<div class="row"><span class="lb">幅</span><button data-a="w-">−</button><b>${n.w}</b><button data-a="w+">＋</button>` +
-      `<span class="lb" style="margin-left:10px">高さ</span><button data-a="h-">−</button><b>${n.h}</b><button data-a="h+">＋</button></div>`;
+      `<span class="lb" style="margin-left:10px">高さ</span><button data-a="h-">−</button><b>${n.h}</b><button data-a="h+">＋</button></div>` +
+      (g ? `<div class="row"><span class="lb">線種</span>${seg('dash', [['0', '実線'], ['1', '破線']], n.dash ? 1 : 0)}</div>` : '');
     else if (sheetTab === 'move') panel = `<div class="dpad"><button data-a="mv-l">←</button><button data-a="mv-u">↑</button><button data-a="mv-d">↓</button><button data-a="mv-r">→</button></div>`;
   } else {
     const e = edgeById(sel.id); if (!e) { sheet.hidden = true; return; }
     const sides = [['auto', '自動'], ['t', '上'], ['r', '右'], ['b', '下'], ['l', '左']];
-    bar = tabBtn('label', 'Aa', 'ラベル') + (e.a.n ? tabBtn('as', '始', '始点の辺') : '') + (e.b.n ? tabBtn('bs', '終', '終点の辺') : '') + tabBtn('style', '→', '矢印・線種') + actBtn('del', '🗑', '削除', 'danger');
+    bar = tabBtn('label', 'Aa', 'ラベル') + (e.a.n ? tabBtn('as', '始', '始点の辺') : '') + (e.b.n ? tabBtn('bs', '終', '終点の辺') : '') + tabBtn('style', '→', '矢印・線種') +
+      tabBtn('ecolor', `<i class="dot" style="background:${e.color || INK}"></i>`, '色') + actBtn('del', '🗑', '削除', 'danger');
     if (sheetTab === 'label') panel = `<input id="s-label" placeholder="線のラベル（例: Yes）" value="${esc(e.label)}">`;
     else if (sheetTab === 'as') panel = `<div class="row">${seg('as', sides, e.as)}</div>`;
     else if (sheetTab === 'bs') panel = `<div class="row">${seg('bs', sides, e.bs)}</div>`;
     else if (sheetTab === 'style') panel = `<div class="row"><span class="lb">矢印</span>${seg('arrow', [['end', '→'], ['both', '↔'], ['none', 'なし']], e.arrow)}</div>` +
       `<div class="row"><span class="lb">線種</span>${seg('dash', [['0', '実線'], ['1', '破線']], e.dash ? 1 : 0)}</div>`;
+    else if (sheetTab === 'ecolor') panel = `<div class="row">${customColor(e.color || INK)}</div>` + palette(STROKES, e.color || INK, 'color');
   }
   sheet.hidden = false;
   sheet.innerHTML = `<div class="bar">${bar}</div>${panel ? `<div class="panel">${panel}</div>` : ''}`;
@@ -624,8 +685,13 @@ sheet.addEventListener('focusout', () => { textSnapped = false; });
 sheet.addEventListener('input', e => {
   if (!sel) return;
   if (!textSnapped) { snap(); textSnapped = true; }
-  if (e.target.id === 's-text') { const n = nodeById(sel.id); if (n) n.text = e.target.value; }
-  else if (e.target.id === 's-label') { const ed = edgeById(sel.id); if (ed) ed.label = e.target.value; }
+  const id = e.target.id;
+  if (id === 's-text') { const n = nodeById(sel.id); if (n) n.text = e.target.value; }
+  else if (id === 's-label') { const ed = edgeById(sel.id); if (ed) ed.label = e.target.value; }
+  else if (id === 's-cc' && isHex(e.target.value)) {
+    if (sel.type === 'node') { const n = nodeById(sel.id); if (n) n[colorMode] = e.target.value; }
+    else { const ed = edgeById(sel.id); if (ed) ed.color = e.target.value; }
+  }
   draw(); persist();
 });
 const MOVES = { 'mv-u': [0, -1], 'mv-d': [0, 1], 'mv-l': [-1, 0], 'mv-r': [1, 0] };
@@ -633,17 +699,21 @@ sheet.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || !sel) return;
   const a = b.dataset.a, k = b.dataset.k, v = b.dataset.v;
   if (b.dataset.p) { openTab(b.dataset.p); return; }
+  if (k === 'cm') { colorMode = v; renderSheet(); return; }
   if (a === 'del') { snap(); deleteSel(); return; }
   if (sel.type === 'node') {
     const n = nodeById(sel.id); if (!n) return;
     if (a === 'link') { const id = n.id; setTool('line'); pend = { n: id }; select(null); updateHint(); return; }
     if (a === 'dup') { snap(); const c = { ...n, id: newId('n'), x: n.x + 2, y: n.y + 2 }; doc.nodes.push(c); sel = { type: 'node', id: c.id }; sheetTab = null; }
-    else if (MOVES[a]) { snap(); n.x += MOVES[a][0]; n.y += MOVES[a][1]; }
+    else if (MOVES[a]) { snap(); moveNode(n, MOVES[a][0], MOVES[a][1]); }
     else if (a) { snap(); if (a === 'w-') n.w = Math.max(2, n.w - 2); if (a === 'w+') n.w += 2; if (a === 'h-') n.h = Math.max(2, n.h - 2); if (a === 'h+') n.h += 2; }
-    else if (k === 'fill') { if (COLORS.includes(v)) { snap(); n.fill = v; } }
-    else if (k === 't') { if (v === 'rect' || v === 'ellipse') { snap(); n.t = v; } }
+    else if (k === 'fill') { if (FILLS.includes(v) || (v === 'none' && n.t === 'group')) { snap(); n.fill = v; } }
+    else if (k === 'stroke') { if (STROKES.includes(v)) { snap(); n.stroke = v; } }
+    else if (k === 't') { if (n.t !== 'group' && (v === 'rect' || v === 'ellipse')) { snap(); n.t = v; } }
+    else if (k === 'dash') { snap(); n.dash = v === '1'; }
   } else {
     const ed = edgeById(sel.id); if (!ed || !k) return;
+    if (k === 'color' && !STROKES.includes(v)) return;
     snap();
     if (k === 'dash') ed.dash = v === '1'; else ed[k] = v;
   }
@@ -708,9 +778,15 @@ function down(e) {
     if (n) { select('node', n.id); gest = { mode: 'move', id: n.id, off: { x: w.x - n.x * G, y: w.y - n.y * G }, sp, moved: false }; return; }
     const ed = hitEdge(sp);
     if (ed) { select('edge', ed.id); gest = { mode: 'tap' }; return; }
+    let gr = hitGroup(w);
+    if (!gr && sel && sel.type === 'node') { // 選択中の枠は内側ドラッグでも動かせる
+      const sg = nodeById(sel.id);
+      if (sg && sg.t === 'group' && w.x >= sg.x * G && w.x <= (sg.x + sg.w) * G && w.y >= sg.y * G && w.y <= (sg.y + sg.h) * G) gr = sg;
+    }
+    if (gr) { select('node', gr.id); gest = { mode: 'move', id: gr.id, off: { x: w.x - gr.x * G, y: w.y - gr.y * G }, sp, moved: false }; return; }
     select(null); gest = { mode: 'pan', sp, v: { ...view } }; return;
   }
-  if (tool === 'rect' || tool === 'ellipse') { gest = { mode: 'place', g0: g, sp, moved: false }; ghostFrom(g, g, true); draw(); return; }
+  if (tool === 'rect' || tool === 'ellipse' || tool === 'group') { gest = { mode: 'place', g0: g, sp, moved: false }; ghostFrom(g, g, true); draw(); return; }
   if (tool === 'line') {
     const t = resolveTarget(w);
     if (!pend) { pend = t; gest = { mode: 'line', from: true, sp, moved: false }; }
@@ -721,7 +797,7 @@ function down(e) {
 
 function ghostFrom(g0, g1, tap) {
   const t = tool;
-  if (tap) { const h = 4, ww = t === 'ellipse' ? 4 : 6; ghost = { t, x: g0.x - ww / 2, y: g0.y - h / 2, w: ww, h }; return; }
+  if (tap) { const [ww, h] = t === 'group' ? [12, 8] : t === 'ellipse' ? [4, 4] : [6, 4]; ghost = { t, x: g0.x - ww / 2, y: g0.y - h / 2, w: ww, h }; return; }
   const w = even(Math.abs(g1.x - g0.x)), h = even(Math.abs(g1.y - g0.y));
   ghost = { t, x: g1.x >= g0.x ? g0.x : g0.x - w, y: g1.y >= g0.y ? g0.y : g0.y - h, w, h };
 }
@@ -743,7 +819,7 @@ function mv(e) {
       if (!gest.moved) { if (Math.hypot(sp.x - gest.sp.x, sp.y - gest.sp.y) < 6) return; gest.moved = true; snap(); }
       const n = nodeById(gest.id); if (!n) return;
       const nx = Math.round((w.x - gest.off.x) / G), ny = Math.round((w.y - gest.off.y) / G);
-      if (nx !== n.x || ny !== n.y) { n.x = nx; n.y = ny; later(refresh); }
+      if (nx !== n.x || ny !== n.y) { moveNode(n, nx - n.x, ny - n.y); later(refresh); }
       break;
     }
     case 'resize': {
@@ -801,11 +877,12 @@ function up(e, g, cancelled) {
       const gr = toGrid(w);
       let x, y, ww, hh;
       if (g.moved) { ghostFrom(g.g0, gr, false); ({ x, y, w: ww, h: hh } = ghost); ghost = null; }
-      else { ww = tool === 'ellipse' ? 4 : 6; hh = 4; x = g.g0.x - ww / 2; y = g.g0.y - hh / 2; }
+      else { [ww, hh] = tool === 'group' ? [12, 8] : tool === 'ellipse' ? [4, 4] : [6, 4]; x = g.g0.x - ww / 2; y = g.g0.y - hh / 2; }
       snap();
-      const n = { id: newId('n'), t: tool, x: Math.round(x), y: Math.round(y), w: ww, h: hh, text: '', fill: '#ffffff' };
+      const isG = tool === 'group';
+      const n = { id: newId('n'), t: tool, x: Math.round(x), y: Math.round(y), w: ww, h: hh, text: '', fill: isG ? 'none' : '#ffffff', stroke: isG ? '#3b82f6' : INK, dash: isG };
       doc.nodes.push(n);
-      if (lock) { select(null); } else { setTool('select'); select('node', n.id); if (matchMedia('(pointer:fine)').matches) setTimeout(() => { const t = $('#s-text'); if (t) t.focus(); }, 30); }
+      if (lock) { select(null); } else { setTool('select'); select('node', n.id); if (isG) { sheetTab = 'text'; renderSheet(); } if (matchMedia('(pointer:fine)').matches) setTimeout(() => { const t = $('#s-text'); if (t) t.focus(); }, 30); }
       refresh(); break;
     }
     case 'line': {
@@ -906,7 +983,7 @@ function exportSvg() {
   const b = bbox() || { x0: 0, y0: 0, x1: 100, y1: 100 }, m = 24;
   const x = b.x0 - m, y = b.y0 - m, w = b.x1 - b.x0 + 2 * m, h = b.y1 - b.y0 + 2 * m;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${x} ${y} ${w} ${h}"><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fff"/>` +
-    doc.edges.map(e => edgeSvg(e, false)).join('') + doc.nodes.map(nodeSvg).join('') + '</svg>';
+    groupsSorted().map(groupSvg).join('') + doc.edges.map(e => edgeSvg(e, false)).join('') + doc.nodes.filter(n => n.t !== 'group').map(nodeSvg).join('') + '</svg>';
   return { svg, w, h };
 }
 function download(name, blob) {
